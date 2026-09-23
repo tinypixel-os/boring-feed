@@ -1,0 +1,821 @@
+.kff-hidden {
+  display: none !important;
+}
+
+/* ---- Feed container ------------------------------------------------------ */
+/* The feed background stays transparent so the host page (including dim or
+   custom themes) shows through; only LinkedIn draws opaque cards. */
+#kff-feed {
+  --fg: #111;
+  --muted: #6b6b6b;
+  --line: #e2e2e2;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 8px 0;
+  height: 100vh;
+  overflow-y: scroll;
+  overscroll-behavior: contain;
+  color: var(--fg);
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: left;
+}
+#kff-feed *,
+#kff-feed *::before,
+#kff-feed *::after {
+  box-sizing: border-box;
+}
+#kff-feed :is(p, h2, h3) {
+  margin: 0;
+  font: inherit;
+}
+
+/* ---- Shared parts -------------------------------------------------------- */
+#kff-feed .kff-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+#kff-feed .kff-ico {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#kff-feed .kff-ico-sm {
+  width: 14px;
+  height: 14px;
+  stroke-width: 1.6;
+}
+#kff-feed .kff-on[data-fill] .kff-ico {
+  fill: currentColor;
+}
+#kff-feed .kff-muted {
+  color: var(--muted);
+}
+#kff-feed .kff-spacer {
+  flex: 1;
+}
+#kff-feed .kff-avatar {
+  flex: none;
+  display: block;
+  border-radius: 50%;
+  overflow: hidden;
+}
+#kff-feed .kff-avatar-img,
+#kff-feed .kff-scene {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+#kff-feed .kff-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---- LinkedIn ------------------------------------------------------------ */
+#kff-feed[data-site="linkedin"] {
+  --card: #fff;
+  --fg: rgba(0, 0, 0, 0.9);
+  --muted: rgba(0, 0, 0, 0.6);
+  --line: #e8e8e8;
+  --hover: rgba(0, 0, 0, 0.08);
+  --accent: #0a66c2;
+  max-width: 555px;
+}
+#kff-feed[data-site="linkedin"][data-theme="dark"] {
+  --card: #1b1f23;
+  --fg: rgba(255, 255, 255, 0.9);
+  --muted: rgba(255, 255, 255, 0.6);
+  --line: #38434f;
+  --hover: rgba(255, 255, 255, 0.08);
+  --accent: #71b7fb;
+}
+#kff-feed .kff-li {
+  margin-bottom: 8px;
+  background: var(--card);
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px rgba(140, 140, 140, 0.2);
+  overflow: hidden;
+}
+#kff-feed .kff-li-head {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 0;
+}
+#kff-feed .kff-li-avatar {
+  width: 48px;
+  height: 48px;
+}
+#kff-feed .kff-li-who {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.35;
+}
+#kff-feed .kff-li-name b {
+  font-weight: 600;
+}
+#kff-feed .kff-li-headline,
+#kff-feed .kff-li-time {
+  font-size: 12px;
+}
+#kff-feed .kff-li-headline {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#kff-feed .kff-li-time {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+#kff-feed .kff-li-ctl {
+  display: flex;
+  align-self: flex-start;
+  margin: -4px -8px 0 0;
+  color: var(--muted);
+}
+#kff-feed .kff-li-icon {
+  width: 32px;
+  height: 32px;
+  justify-content: center;
+  border-radius: 50%;
+}
+#kff-feed .kff-li-icon:hover {
+  background: var(--hover);
+}
+#kff-feed .kff-li-text {
+  position: relative;
+  padding: 8px 16px 0;
+  line-height: 20px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+#kff-feed .kff-li .kff-more {
+  position: absolute;
+  right: 16px;
+  bottom: 0;
+  padding-left: 6px;
+  background: var(--card);
+  color: var(--muted);
+  line-height: 20px;
+}
+#kff-feed .kff-li .kff-more:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+#kff-feed .kff-li-media {
+  margin-top: 8px;
+  aspect-ratio: 1.91 / 1;
+}
+#kff-feed .kff-li-social {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 12px;
+}
+#kff-feed .kff-li-reacts,
+#kff-feed .kff-li-bubbles {
+  display: inline-flex;
+  align-items: center;
+}
+#kff-feed .kff-li-reacts {
+  gap: 4px;
+}
+#kff-feed .kff-li-bubble {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px var(--card);
+}
+#kff-feed .kff-li-bubble + .kff-li-bubble {
+  margin-left: -3px;
+}
+#kff-feed .kff-li-bubble .kff-ico {
+  width: 10px;
+  height: 10px;
+  fill: #fff;
+  stroke: #fff;
+  stroke-width: 1;
+}
+#kff-feed .kff-li-like {
+  background: #378fe9;
+}
+#kff-feed .kff-li-love {
+  background: #df704d;
+}
+#kff-feed .kff-li-celebrate {
+  background: #6dae4f;
+}
+#kff-feed .kff-li-actions {
+  display: flex;
+  margin: 0 16px;
+  padding: 4px 0;
+  border-top: 1px solid var(--line);
+}
+#kff-feed .kff-li-act {
+  flex: 1;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: 4px;
+  color: var(--muted);
+  font-weight: 600;
+}
+#kff-feed .kff-li-act:hover {
+  background: var(--hover);
+}
+#kff-feed .kff-li-act.kff-on {
+  color: var(--accent);
+}
+@media (max-width: 480px) {
+  #kff-feed .kff-li-act span {
+    display: none;
+  }
+}
+
+/* ---- X / Twitter --------------------------------------------------------- */
+#kff-feed[data-site="twitter"] {
+  --fg: #0f1419;
+  --muted: #536471;
+  --line: #eff3f4;
+  --hover: rgba(0, 0, 0, 0.03);
+  padding: 0;
+  font-family: "TwitterChirp", -apple-system, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 15px;
+}
+#kff-feed[data-site="twitter"][data-theme="dark"] {
+  --fg: #e7e9ea;
+  --muted: #71767b;
+  --line: #2f3336;
+  --hover: rgba(255, 255, 255, 0.03);
+}
+#kff-feed .kff-x {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  line-height: 20px;
+}
+#kff-feed .kff-x:hover {
+  background: var(--hover);
+}
+#kff-feed .kff-x-avatar {
+  width: 40px;
+  height: 40px;
+}
+#kff-feed .kff-x-body {
+  flex: 1;
+  min-width: 0;
+}
+#kff-feed .kff-x-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+#kff-feed .kff-x-name {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#kff-feed .kff-x-handle {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#kff-feed .kff-x-more {
+  margin: -8px -8px -8px 0;
+  padding: 8px;
+  border-radius: 50%;
+}
+#kff-feed .kff-x-more .kff-ico {
+  width: 18px;
+  height: 18px;
+}
+#kff-feed .kff-x-more:hover {
+  color: #1d9bf0;
+  background: rgba(29, 155, 240, 0.1);
+}
+#kff-feed .kff-x-text {
+  margin-top: 2px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+#kff-feed .kff-x-media {
+  margin-top: 12px;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+#kff-feed .kff-x-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+#kff-feed .kff-x-act {
+  gap: 4px;
+}
+#kff-feed .kff-x-act .kff-ico {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.8;
+}
+#kff-feed .kff-x-tail {
+  display: flex;
+  gap: 12px;
+}
+#kff-feed :is(.kff-x-reply, .kff-x-views, .kff-x-save, .kff-x-share):hover,
+#kff-feed .kff-x-save.kff-on {
+  color: #1d9bf0;
+}
+#kff-feed .kff-x-repost:hover,
+#kff-feed .kff-x-repost.kff-on {
+  color: #00ba7c;
+}
+#kff-feed .kff-x-like:hover,
+#kff-feed .kff-x-like.kff-on {
+  color: #f91880;
+}
+
+/* ---- Reddit -------------------------------------------------------------- */
+#kff-feed[data-site="reddit"] {
+  --fg: #0f1a1c;
+  --muted: #5c6c74;
+  --line: rgba(0, 0, 0, 0.1);
+  --hover: #f2f4f5;
+  --pill: #e5ebee;
+  --pill-hover: #d2dadd;
+  --join: #0a449b;
+  max-width: 756px;
+}
+#kff-feed[data-site="reddit"][data-theme="dark"] {
+  --fg: #eef1f3;
+  --muted: #8ba2ad;
+  --line: rgba(255, 255, 255, 0.1);
+  --hover: #181c1f;
+  --pill: #2a3236;
+  --pill-hover: #333d42;
+  --join: #115bca;
+}
+#kff-feed .kff-rd {
+  position: relative;
+  margin: 0 0 9px;
+  padding: 4px 16px 10px;
+  border-radius: 16px;
+}
+#kff-feed .kff-rd::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: -5px;
+  border-top: 1px solid var(--line);
+}
+#kff-feed .kff-rd:hover {
+  background: var(--hover);
+}
+#kff-feed .kff-rd-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  font-size: 12px;
+}
+#kff-feed .kff-rd-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-right: 4px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+#kff-feed .kff-rd-sub {
+  font-weight: 600;
+}
+#kff-feed .kff-rd-join {
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--join);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+#kff-feed .kff-rd-more {
+  width: 32px;
+  height: 32px;
+  justify-content: center;
+  border-radius: 50%;
+}
+#kff-feed .kff-rd-more:hover {
+  background: var(--pill);
+}
+#kff-feed .kff-rd-title {
+  margin: 4px 0 8px;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+#kff-feed .kff-rd-media {
+  margin-bottom: 8px;
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+#kff-feed .kff-rd-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+#kff-feed .kff-rd-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--pill);
+  color: var(--fg);
+  font-size: 12px;
+  font-weight: 600;
+}
+#kff-feed button.kff-rd-pill:hover {
+  background: var(--pill-hover);
+}
+#kff-feed .kff-rd-pill .kff-ico {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.6;
+}
+#kff-feed .kff-rd-vote {
+  gap: 0;
+  padding: 0;
+}
+#kff-feed .kff-rd-vote .kff-btn {
+  width: 32px;
+  height: 32px;
+  justify-content: center;
+  border-radius: 50%;
+}
+#kff-feed .kff-rd-up:hover {
+  color: #d93a00;
+}
+#kff-feed .kff-rd-down:hover {
+  color: #6a5cff;
+}
+#kff-feed .kff-rd-vote:has(.kff-on) .kff-btn:hover {
+  color: #fff;
+  background: rgba(0, 0, 0, 0.15);
+}
+#kff-feed .kff-rd-vote:has(.kff-rd-up.kff-on) {
+  background: #d93a00;
+  color: #fff;
+}
+#kff-feed .kff-rd-vote:has(.kff-rd-down.kff-on) {
+  background: #6a5cff;
+  color: #fff;
+}
+
+/* ---- Instagram ----------------------------------------------------------- */
+#kff-feed[data-site="instagram"] {
+  --bg: #fff;
+  --fg: #000;
+  --muted: #737373;
+  --line: #dbdbdb;
+  --link: #00376b;
+  max-width: 470px;
+  padding-top: 16px;
+  line-height: 18px;
+}
+#kff-feed[data-site="instagram"][data-theme="dark"] {
+  --bg: #000;
+  --fg: #f5f5f5;
+  --muted: #a8a8a8;
+  --line: #262626;
+  --link: #e0f1ff;
+}
+#kff-feed .kff-ig {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+#kff-feed .kff-ig-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-bottom: 12px;
+}
+#kff-feed .kff-ig-ring {
+  display: block;
+  margin-right: 8px;
+  padding: 2px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5);
+}
+#kff-feed .kff-ig-avatar {
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--bg);
+}
+#kff-feed .kff-ig b {
+  font-weight: 600;
+}
+#kff-feed .kff-ig-more {
+  margin-right: -8px;
+  padding: 8px;
+}
+#kff-feed .kff-ig-media {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 5;
+  padding: 12%;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+  color: #fff;
+  text-align: center;
+  user-select: none;
+}
+#kff-feed .kff-ig-quote {
+  font-weight: 700;
+  line-height: 1.3;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.2);
+  overflow-wrap: anywhere;
+}
+#kff-feed .kff-ig-mark {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+#kff-feed .kff-ig-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 96px;
+  height: 96px;
+  margin: -48px 0 0 -48px;
+  fill: #fff;
+  stroke: none;
+  opacity: 0;
+  filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.25));
+  pointer-events: none;
+}
+#kff-feed .kff-burst .kff-ig-burst {
+  animation: kff-burst 0.9s ease-out;
+}
+#kff-feed .kff-ig-actions {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+}
+#kff-feed .kff-ig-act {
+  padding: 8px;
+}
+#kff-feed .kff-ig-act:first-child {
+  margin-left: -8px;
+}
+#kff-feed .kff-ig-act:last-child {
+  margin-right: -8px;
+}
+#kff-feed .kff-ig-act .kff-ico {
+  width: 24px;
+  height: 24px;
+  stroke-width: 1.9;
+}
+#kff-feed .kff-ig-act:hover {
+  color: var(--muted);
+}
+#kff-feed .kff-ig-like.kff-on {
+  color: #ff3040;
+}
+#kff-feed .kff-ig-like.kff-on .kff-ico {
+  animation: kff-pop 0.45s ease-out;
+}
+#kff-feed .kff-ig-likes {
+  font-weight: 600;
+}
+#kff-feed .kff-ig-caption {
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+#kff-feed .kff-ig-tags {
+  color: var(--link);
+}
+#kff-feed .kff-ig-line {
+  margin-top: 8px;
+}
+
+/* ---- 9GAG ---------------------------------------------------------------- */
+#kff-feed[data-site="9gag"] {
+  --fg: #000;
+  --muted: #999;
+  --line: #e5e5e5;
+  --pill: #f0f0f0;
+  --pill-hover: #e5e5e5;
+  --accent: #0f86f5;
+  max-width: 500px;
+  padding-top: 16px;
+}
+#kff-feed[data-site="9gag"][data-theme="dark"] {
+  --fg: #fff;
+  --line: #333;
+  --pill: #2b2b2b;
+  --pill-hover: #383838;
+  --accent: #4aa6ff;
+}
+#kff-feed .kff-gag {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+#kff-feed .kff-gag-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+#kff-feed .kff-gag-sec {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+#kff-feed .kff-gag-more {
+  padding: 4px;
+}
+#kff-feed .kff-gag-title {
+  margin: 8px 0 12px;
+  font-size: 20px;
+  line-height: 1.3;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+#kff-feed .kff-gag-media {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: #000;
+  overflow: hidden;
+}
+#kff-feed .kff-gag-meme {
+  position: absolute;
+  top: 4%;
+  left: 5%;
+  right: 5%;
+  color: #fff;
+  font-family: Impact, "Anton", "Arial Black", sans-serif;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  text-shadow:
+    2px 2px 0 #000, -2px 2px 0 #000, 2px -2px 0 #000, -2px -2px 0 #000,
+    0 2px 0 #000, 2px 0 0 #000, 0 -2px 0 #000, -2px 0 0 #000;
+}
+#kff-feed .kff-gag-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+#kff-feed .kff-gag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 4px;
+  background: var(--pill);
+  color: var(--fg);
+  font-size: 13px;
+  font-weight: 700;
+}
+#kff-feed button.kff-gag-pill:hover {
+  background: var(--pill-hover);
+}
+#kff-feed .kff-gag-pill .kff-ico {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.8;
+}
+#kff-feed .kff-gag-vote {
+  gap: 0;
+  padding: 0;
+}
+#kff-feed .kff-gag-vote .kff-btn {
+  width: 36px;
+  height: 32px;
+  justify-content: center;
+}
+#kff-feed .kff-gag-vote .kff-on {
+  color: var(--accent);
+}
+
+/* ---- Infinite-scroll sentinel -------------------------------------------- */
+.kff-sentinel {
+  height: 1px;
+  display: grid;
+  place-items: center;
+}
+.kff-sentinel .kff-spinner {
+  display: none;
+}
+.kff-sentinel.kff-loading {
+  height: 64px;
+}
+.kff-sentinel.kff-loading .kff-spinner {
+  display: block;
+}
+
+/* Cover shown until our feed replaces the native one */
+#kff-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: grid;
+  place-items: center;
+  background: #fff;
+}
+@media (prefers-color-scheme: dark) {
+  #kff-loader {
+    background: #111;
+  }
+}
+.kff-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(128, 128, 128, 0.3);
+  border-top-color: rgba(128, 128, 128, 0.9);
+  border-radius: 50%;
+  animation: kff-spin 0.8s linear infinite;
+}
+@keyframes kff-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes kff-pop {
+  40% {
+    transform: scale(1.25);
+  }
+}
+@keyframes kff-burst {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  15% {
+    opacity: 0.95;
+    transform: scale(1.1);
+  }
+  30% {
+    transform: scale(0.95);
+  }
+  70% {
+    opacity: 0.95;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}

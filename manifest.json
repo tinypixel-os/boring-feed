@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Known Facts Feed",
+  "version": "1.0.0",
+  "description": "Replaces social feeds with a predictable scroll of facts you already know about yourself.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "*://*.linkedin.com/*",
+    "*://*.x.com/*",
+    "*://*.twitter.com/*",
+    "*://*.reddit.com/*",
+    "*://*.instagram.com/*",
+    "*://*.9gag.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.linkedin.com/*",
+        "*://*.x.com/*",
+        "*://*.twitter.com/*",
+        "*://*.reddit.com/*",
+        "*://*.instagram.com/*",
+        "*://*.9gag.com/*"
+      ],
+      "js": ["sites.js", "cards.js", "content.js"],
+      "css": ["feed.css"],
+      "run_at": "document_start"
+    }
+  ],
+  "options_page": "options.html",
+  "action": {
+    "default_title": "Known Facts Feed",
+    "default_popup": "popup.html"
+  }
+}
