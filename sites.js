@@ -6,6 +6,8 @@
 //   profile (optional): per-person timelines, also replaced.
 //     route's first capture group is the handle; paths whose first segment is
 //     in reserved are the site's own pages, not profiles. feed as above.
+//     self (optional): selector for a link to the signed-in user's profile;
+//     that profile is left alone.
 // Selectors are best guesses against each site's current DOM; adjust the
 // fallback lists here when a site changes its markup.
 const KFF_SITES = [
@@ -38,6 +40,8 @@ const KFF_SITES = [
         "i", "compose", "login", "logout", "signup", "tos", "privacy", "jobs",
         "premium", "communities", "lists", "bookmarks", "grok", "about",
       ],
+      // Sidebar "Profile" link, whose href is /<your handle>.
+      self: "a[data-testid='AppTabBar_Profile_Link']",
       // Timeline only, so the profile header stays visible.
       feed: [
         "[data-testid='primaryColumn'] [aria-label^='Timeline: ']",
@@ -76,12 +80,13 @@ function kffFindSite(hostname) {
 
 // Which native container to replace on this path, as { key, feed } where key
 // identifies the route (so SPA navigation between two replaced pages rebuilds
-// the feed), or null if this page should be left alone.
-function kffMatchRoute(site, pathname) {
+// the feed), or null if this page should be left alone. selfHandle is the
+// signed-in user's lowercased handle, if known; their own profile is skipped.
+function kffMatchRoute(site, pathname, selfHandle) {
   if (site.route.test(pathname)) return { key: "feed", feed: site.feed };
   const m = site.profile && pathname.match(site.profile.route);
   const handle = m && m[1].toLowerCase();
-  if (handle && !site.profile.reserved.includes(handle)) {
+  if (handle && handle !== selfHandle && !site.profile.reserved.includes(handle)) {
     return { key: "profile:" + handle, feed: site.profile.feed };
   }
   return null;

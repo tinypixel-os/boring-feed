@@ -6,6 +6,7 @@
   let observer = null;
   let order = [];
   let pos = 0;
+  let selfHandle = null;
 
   const load = () =>
     new Promise((resolve) =>
@@ -168,15 +169,31 @@
     return null;
   }
 
+  // The signed-in user's handle, read from the site's own profile link and
+  // cached locally so it's known before the page renders next time.
+  const selfKey = (site) => "selfHandle:" + site.id;
+
+  function detectSelf(site) {
+    const sel = site.profile && site.profile.self;
+    const href = sel && document.querySelector(sel)?.getAttribute("href");
+    const m = href && href.match(/^\/([^/?#]+)/);
+    const handle = m && m[1].toLowerCase();
+    if (handle && handle !== selfHandle) {
+      selfHandle = handle;
+      chrome.storage.local.set({ [selfKey(site)]: handle });
+    }
+  }
+
   function apply() {
     if (!settings) return;
     if (gaveUpPath && gaveUpPath !== location.pathname) gaveUpPath = null;
     const site = kffFindSite(location.hostname);
+    if (site) detectSelf(site);
     const match =
       settings.enabled &&
       site &&
       !settings.disabledSites[site.id] &&
-      kffMatchRoute(site, location.pathname);
+      kffMatchRoute(site, location.pathname, selfHandle);
     const existing = document.getElementById("kff-feed");
 
     if (!match) {
@@ -235,7 +252,11 @@
     // Optimistically cover the page before settings load; apply() removes it
     // straight away if the extension is disabled here.
     const site = kffFindSite(location.hostname);
-    if (site && kffMatchRoute(site, location.pathname)) showLoader();
+    if (site) {
+      const key = selfKey(site);
+      selfHandle = (await chrome.storage.local.get(key))[key] || null;
+    }
+    if (site && kffMatchRoute(site, location.pathname, selfHandle)) showLoader();
 
     settings = await load();
     apply();
@@ -246,7 +267,8 @@
     addEventListener("popstate", apply);
     if (window.navigation) navigation.addEventListener("navigate", () => setTimeout(apply, 0));
     setInterval(apply, 1500); // catches pushState navigations with no DOM churn
-    chrome.storage.onChanged.addListener(async () => {
+    chrome.storage.onChanged.addListener(async (_, area) => {
+      if (area !== "sync") return;
       settings = await load();
       order = [];
       pos = 0;
