@@ -1,7 +1,7 @@
 (() => {
   const HIDE = "kff-hidden";
   const BATCH = 6;
-  const PLACEHOLDER = "Open the Known Facts Feed options to add facts about yourself.";
+  const PLACEHOLDER = "Open the Boring Feed options to add facts about yourself.";
   let settings = null;
   let observer = null;
   let order = [];

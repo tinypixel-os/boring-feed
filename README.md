@@ -1,4 +1,4 @@
-# Known Facts Feed
+# Boring Feed
 
 Replaces the home feed on LinkedIn, Twitter/X, Reddit, Instagram and 9GAG with an endless scroll of facts you already know about yourself. Same scroll habit, zero novelty. On Twitter/X, every profile's timeline is replaced too (the profile header stays).
 
