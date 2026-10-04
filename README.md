@@ -1,6 +1,6 @@
 # Boring Feed
 
-Replaces the home feed on LinkedIn, Twitter/X, Reddit, Instagram and 9GAG with an endless scroll of facts you already know about yourself. Same scroll habit, zero novelty. On Twitter/X, every profile's timeline is replaced too (the profile header stays).
+Replaces the home feed on LinkedIn, Twitter/X, Reddit, Instagram, 9GAG and YouTube with an endless scroll of facts you already know about yourself. Same scroll habit, zero novelty. On Twitter/X, every profile's timeline is replaced too (the profile header stays). On YouTube, the home and subscriptions pages are replaced and Shorts are removed everywhere: shelves, sidebar entry and channel tab are hidden, and Shorts links open in the normal player.
 
 ## Screenshots
 

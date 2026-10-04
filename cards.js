@@ -67,6 +67,17 @@ const KFF_CARDS = (() => {
     "Nobody: / Me:",
   ];
   const GAG_SECTIONS = ["Funny", "Relatable", "Wholesome", "Random"];
+  const YT_TITLES = [
+    "You Won't Believe This (You Will)",
+    "I Tried Being Myself for 24 Hours",
+    "Things You Already Know, Explained",
+    "The Truth About You (Nothing New)",
+    "Reacting to My Own Life Facts",
+    "This Changes Nothing",
+    "Watch Before It's Still True",
+    "Day 1,000 of Being Me",
+  ];
+  const YT_AGES = ["2 hours ago", "5 hours ago", "1 day ago", "3 days ago", "1 week ago", "2 weeks ago", "1 month ago", "4 months ago"];
   const TAG_COLORS = ["#ff4500", "#0079d3", "#46d160", "#ff66ac", "#7193ff", "#ffb000", "#00a6a5", "#9147ff"];
   const QUOTE_GRADIENTS = [
     ["#833ab4", "#fd1d1d"],
@@ -89,6 +100,8 @@ const KFF_CARDS = (() => {
   // 24x24 stroke icons.
   const ICONS = {
     more: ["M5 12h.01M12 12h.01M19 12h.01"],
+    moreV: ["M12 5h.01M12 12h.01M12 19h.01"],
+    clock: ["M12 2a10 10 0 1 0 0 20 10 10 0 1 0 0-20z", "M12 6v6l4 2"],
     x: ["M18 6 6 18", "M6 6l12 12"],
     globe: [
       "M12 2a10 10 0 1 0 0 20 10 10 0 1 0 0-20z",
@@ -474,7 +487,41 @@ const KFF_CARDS = (() => {
     );
   }
 
-  const RENDERERS = { linkedin, twitter, reddit, instagram, "9gag": ninegag };
+  // --- YouTube --------------------------------------------------------------
+  // A home-grid video: the fact is written across the thumbnail.
+  function youtube({ fact, i }) {
+    const w = who(i);
+    const views = num(i, 14, 300, 900000);
+    const mins = num(i, 15, 1, 48);
+    const secs = String(num(i, 16, 0, 60)).padStart(2, "0");
+    return h(
+      "article",
+      { class: "kff-post kff-yt" },
+      h(
+        "div",
+        { class: "kff-yt-thumb" },
+        scene(i),
+        h("p", { class: "kff-yt-caption", text: fact, style: { fontSize: fitSize(fact, [26, 21, 17, 15, 13]) } }),
+        h("span", { class: "kff-yt-time", text: `${mins}:${secs}` }),
+        toggle("kff-yt-later", "Watch later", [icon("clock")])
+      ),
+      h(
+        "div",
+        { class: "kff-yt-meta" },
+        avatar(i, "kff-yt-avatar"),
+        h(
+          "div",
+          { class: "kff-yt-info" },
+          h("h3", { class: "kff-yt-title", text: pick(YT_TITLES, i) }),
+          h("div", { class: "kff-muted", text: w.name }),
+          h("div", { class: "kff-muted", text: `${FMT.compact(views)} views • ${pick(YT_AGES, i)}` })
+        ),
+        button("kff-yt-more", "Action menu", [icon("moreV")])
+      )
+    );
+  }
+
+  const RENDERERS = { linkedin, twitter, reddit, instagram, "9gag": ninegag, youtube };
 
   return {
     FMT,

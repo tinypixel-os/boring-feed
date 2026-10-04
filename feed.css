@@ -750,6 +750,122 @@
   color: var(--accent);
 }
 
+/* ---- YouTube ------------------------------------------------------------- */
+/* A responsive grid like the home page, filling the space under the masthead. */
+#kff-feed[data-site="youtube"] {
+  --fg: #0f0f0f;
+  --muted: #606060;
+  --hover: rgba(0, 0, 0, 0.1);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  align-content: start;
+  gap: 40px 16px;
+  max-width: 2200px;
+  height: calc(100vh - 56px);
+  padding: 24px;
+  font-family: "Roboto", "Arial", sans-serif;
+}
+#kff-feed[data-site="youtube"][data-theme="dark"] {
+  --fg: #f1f1f1;
+  --muted: #aaa;
+  --hover: rgba(255, 255, 255, 0.2);
+}
+#kff-feed[data-site="youtube"] .kff-sentinel {
+  grid-column: 1 / -1;
+}
+#kff-feed .kff-yt-thumb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+}
+#kff-feed .kff-yt-thumb .kff-scene {
+  position: absolute;
+  inset: 0;
+}
+#kff-feed .kff-yt-caption {
+  position: relative;
+  padding: 0 8%;
+  color: #fff;
+  font-weight: 900;
+  line-height: 1.15;
+  text-align: center;
+  overflow-wrap: anywhere;
+  text-shadow: 0 2px 0 #000, 0 0 12px rgba(0, 0, 0, 0.6);
+}
+#kff-feed .kff-yt-time {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+#kff-feed .kff-yt-later {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  justify-content: center;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  opacity: 0;
+}
+#kff-feed .kff-yt:hover .kff-yt-later,
+#kff-feed .kff-yt-later.kff-on {
+  opacity: 1;
+}
+#kff-feed .kff-yt-later .kff-ico {
+  width: 18px;
+  height: 18px;
+}
+#kff-feed .kff-yt-later.kff-on {
+  color: #3ea6ff;
+}
+#kff-feed .kff-yt-meta {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+#kff-feed .kff-yt-avatar {
+  width: 36px;
+  height: 36px;
+}
+#kff-feed .kff-yt-info {
+  flex: 1;
+  min-width: 0;
+  line-height: 20px;
+}
+#kff-feed .kff-yt-title {
+  margin-bottom: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+#kff-feed .kff-yt-more {
+  align-self: flex-start;
+  width: 36px;
+  height: 36px;
+  margin: -6px -12px 0 0;
+  justify-content: center;
+  border-radius: 50%;
+}
+#kff-feed .kff-yt-more:hover {
+  background: var(--hover);
+}
+
 /* ---- Infinite-scroll sentinel -------------------------------------------- */
 .kff-sentinel {
   height: 1px;

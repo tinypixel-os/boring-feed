@@ -16,7 +16,8 @@
     "*://*.twitter.com/*",
     "*://*.reddit.com/*",
     "*://*.instagram.com/*",
-    "*://*.9gag.com/*"
+    "*://*.9gag.com/*",
+    "*://*.youtube.com/*"
   ],
   "content_scripts": [
     {
@@ -26,7 +27,8 @@
         "*://*.twitter.com/*",
         "*://*.reddit.com/*",
         "*://*.instagram.com/*",
-        "*://*.9gag.com/*"
+        "*://*.9gag.com/*",
+        "*://*.youtube.com/*"
       ],
       "js": ["sites.js", "cards.js", "content.js"],
       "css": ["feed.css"],

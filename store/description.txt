@@ -8,6 +8,7 @@ SUPPORTED SITES
 • Reddit
 • Instagram
 • 9GAG
+• YouTube (home and subscriptions; Shorts are removed everywhere on the site)
 
 FEATURES
 • Posts are styled to match each site, so the swap feels natural

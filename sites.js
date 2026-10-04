@@ -8,6 +8,12 @@
 //     in reserved are the site's own pages, not profiles. feed as above.
 //     self (optional): selector for a link to the signed-in user's profile;
 //     that profile is left alone.
+//   pages (optional): more feed pages, as [{ route, feed }], each with its own
+//     selectors (for SPAs that keep several pages in the DOM at once)
+//   hide (optional): selectors hidden on every page of the site, not just feeds
+//   redirects (optional): [pattern, replacement] pairs; a matching pathname is
+//     sent to pathname.replace(pattern, replacement)
+// All of these apply only while the extension is on for the site.
 // Selectors are best guesses against each site's current DOM; adjust the
 // fallback lists here when a site changes its markup.
 const KFF_SITES = [
@@ -70,6 +76,44 @@ const KFF_SITES = [
     route: /^\/(hot|fresh|trending)?\/?$/,
     feed: ["#list-view-2", ".list-stream", ".main-wrap"],
   },
+  {
+    id: "youtube",
+    label: "YouTube",
+    hosts: ["youtube.com"],
+    // Home, plus subscriptions below.
+    route: /^\/$/,
+    feed: [
+      "ytd-browse[page-subtype='home'] ytd-rich-grid-renderer",
+      "ytd-browse[page-subtype='home'] #primary",
+    ],
+    pages: [
+      {
+        route: /^\/feed\/subscriptions\/?$/,
+        feed: [
+          "ytd-browse[page-subtype='subscriptions'] ytd-rich-grid-renderer",
+          "ytd-browse[page-subtype='subscriptions'] #primary",
+        ],
+      },
+    ],
+    // No Shorts anywhere: shelves, single Shorts in grids and lists, the
+    // sidebar entry and the channel tab.
+    hide: [
+      "ytd-rich-shelf-renderer[is-shorts]",
+      "ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts])",
+      "ytd-reel-shelf-renderer",
+      "grid-shelf-view-model:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2)",
+      ":is(ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer, ytd-compact-video-renderer):has(a[href^='/shorts/'])",
+      ":is(ytd-guide-entry-renderer, ytd-mini-guide-entry-renderer):has(a[title='Shorts'])",
+      "ytd-mini-guide-entry-renderer[aria-label='Shorts']",
+      "yt-tab-shape[tab-title='Shorts']",
+    ],
+    // A Short opened from a link plays in the normal player instead; the
+    // Shorts feed itself goes home.
+    redirects: [
+      [/^\/shorts\/([\w-]+)\/?$/, "/watch?v=$1"],
+      [/^\/shorts\/?$/, "/"],
+    ],
+  },
 ];
 
 function kffFindSite(hostname) {
@@ -84,6 +128,8 @@ function kffFindSite(hostname) {
 // signed-in user's lowercased handle, if known; their own profile is skipped.
 function kffMatchRoute(site, pathname, selfHandle) {
   if (site.route.test(pathname)) return { key: "feed", feed: site.feed };
+  const page = (site.pages || []).findIndex((p) => p.route.test(pathname));
+  if (page >= 0) return { key: "page:" + page, feed: site.pages[page].feed };
   const m = site.profile && pathname.match(site.profile.route);
   const handle = m && m[1].toLowerCase();
   if (handle && handle !== selfHandle && !site.profile.reserved.includes(handle)) {

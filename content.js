@@ -35,13 +35,43 @@
     return { fact: order[i], i };
   }
 
+  // Body background first, then <html> (YouTube paints the root, not body).
   function detectTheme() {
-    const m = getComputedStyle(document.body).backgroundColor.match(/\d+(\.\d+)?/g);
-    if (m && m.length >= 3 && !(m.length === 4 && Number(m[3]) === 0)) {
-      const [r, g, b] = m.map(Number);
-      return 0.2126 * r + 0.7152 * g + 0.0722 * b < 110 ? "dark" : "light";
+    for (const el of [document.body, document.documentElement]) {
+      const m = getComputedStyle(el).backgroundColor.match(/\d+(\.\d+)?/g);
+      if (m && m.length >= 3 && !(m.length === 4 && Number(m[3]) === 0)) {
+        const [r, g, b] = m.map(Number);
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b < 110 ? "dark" : "light";
+      }
     }
     return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+
+  // The site's hide selectors, as one rule each so a selector the browser
+  // rejects doesn't take the others down with it.
+  function syncHide(site, on) {
+    let style = document.getElementById("kff-hide");
+    if (!on || !site.hide) {
+      style?.remove();
+      return;
+    }
+    if (style) return;
+    style = document.createElement("style");
+    style.id = "kff-hide";
+    style.textContent = site.hide.map((sel) => `${sel} { display: none !important; }`).join("\n");
+    document.documentElement.append(style);
+  }
+
+  let redirecting = false;
+  function redirect(site) {
+    for (const [pattern, to] of site.redirects || []) {
+      if (!redirecting && pattern.test(location.pathname)) {
+        redirecting = true;
+        location.replace(location.pathname.replace(pattern, to));
+        return true;
+      }
+    }
+    return false;
   }
 
   const addBatch = (feed, sentinel) => {
@@ -189,11 +219,10 @@
     if (gaveUpPath && gaveUpPath !== location.pathname) gaveUpPath = null;
     const site = kffFindSite(location.hostname);
     if (site) detectSelf(site);
-    const match =
-      settings.enabled &&
-      site &&
-      !settings.disabledSites[site.id] &&
-      kffMatchRoute(site, location.pathname, selfHandle);
+    const on = settings.enabled && site && !settings.disabledSites[site.id];
+    if (site) syncHide(site, on);
+    if (on && redirect(site)) return;
+    const match = on && kffMatchRoute(site, location.pathname, selfHandle);
     const existing = document.getElementById("kff-feed");
 
     if (!match) {
