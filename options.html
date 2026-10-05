@@ -2,41 +2,255 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Boring Feed – Options</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Boring Feed Options</title>
+  <link rel="stylesheet" href="feed.css">
   <style>
-    body { font: 15px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 640px; margin: 32px auto; padding: 0 16px; color: #111; }
-    h1 { font-size: 22px; }
-    h2 { font-size: 16px; margin-top: 28px; }
-    label { display: block; margin: 12px 0 4px; font-weight: 600; }
-    .hint { color: #666; font-weight: 400; font-size: 13px; }
-    input[type=text], textarea { width: 100%; padding: 8px; font: inherit; box-sizing: border-box; }
-    textarea { min-height: 110px; }
-    .row { display: flex; gap: 8px; align-items: center; margin: 6px 0; font-weight: 400; }
-    button { margin-top: 20px; padding: 8px 18px; font: inherit; cursor: pointer; }
-    #status { margin-left: 12px; color: #2a7; }
+    :root {
+      color-scheme: light;
+      --bg: #f5f6f8;
+      --panel: #fff;
+      --fg: #15181c;
+      --muted: #5f6a75;
+      --line: #e1e4e8;
+      --input: #fff;
+      --accent: #2f6fde;
+      --accent-hover: #2459b8;
+      --accent-fg: #fff;
+      --focus: rgba(47, 111, 222, 0.35);
+      --ok: #1f8a4c;
+      --err: #c62828;
+      --welcome: #eaf1fd;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+        --bg: #0f1115;
+        --panel: #171a20;
+        --fg: #e8eaed;
+        --muted: #9aa4af;
+        --line: #2a2f37;
+        --input: #0f1115;
+        --accent: #5b8ff0;
+        --accent-hover: #7aa5f4;
+        --accent-fg: #0b1220;
+        --focus: rgba(91, 143, 240, 0.4);
+        --ok: #4cc38a;
+        --err: #ff6b6b;
+        --welcome: #17233a;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    [hidden] { display: none !important; }
+
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 32px 24px 0; }
+    header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+    header img { width: 44px; height: 44px; }
+    h1 { margin: 0; font-size: 24px; letter-spacing: -0.01em; }
+    header p { margin: 2px 0 0; color: var(--muted); }
+
+    .welcome {
+      margin-bottom: 20px;
+      padding: 16px 18px;
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      background: var(--welcome);
+    }
+    .welcome b { display: block; margin-bottom: 4px; font-size: 16px; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 440px;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: minmax(0, 1fr); }
+      .preview { position: static; }
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+    section { padding: 20px 22px; border-bottom: 1px solid var(--line); }
+    h2 { margin: 0 0 4px; font-size: 16px; }
+    .intro { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+
+    .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
+    @media (max-width: 560px) { .fields { grid-template-columns: minmax(0, 1fr); } }
+    .field label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 14px; }
+    .hint { color: var(--muted); font-weight: 400; font-size: 13px; }
+    .field .hint { display: block; margin-top: 3px; }
+
+    input[type=text], textarea {
+      width: 100%;
+      padding: 9px 11px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--input);
+      color: inherit;
+      font: inherit;
+    }
+    textarea { min-height: 130px; resize: vertical; }
+    input[type=text]:focus, textarea:focus, button:focus-visible, input[type=checkbox]:focus-visible {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--focus);
+    }
+    input[type=checkbox] { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); }
+
+    .row { display: flex; gap: 10px; align-items: center; margin: 8px 0; cursor: pointer; }
+    .row.sub { margin-left: 26px; color: var(--muted); font-size: 14px; }
+    .row.sub:has(input:disabled) { opacity: 0.5; cursor: default; }
+
+    .savebar {
+      position: sticky;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 22px;
+      border-radius: 0 0 14px 14px;
+      background: var(--panel);
+    }
+    .primary {
+      padding: 10px 22px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--accent);
+      color: var(--accent-fg);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .primary:hover { background: var(--accent-hover); }
+    #status { font-size: 14px; color: var(--muted); }
+    #status.ok { color: var(--ok); }
+    #status.err { color: var(--err); }
+
+    /* ---- Preview ---- */
+    .preview { position: sticky; top: 24px; overflow: hidden; }
+    .preview-head { padding: 16px 18px 0; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .tab {
+      padding: 5px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: none;
+      color: var(--muted);
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .tab[aria-selected="true"] { border-color: var(--accent); background: var(--accent); color: var(--accent-fg); }
+
+    /* Each site's own page background, so transparent cards look right. */
+    #stage {
+      --stage: #fff;
+      margin-top: 14px;
+      padding: 16px 12px;
+      max-height: 560px;
+      overflow-y: auto;
+      background: var(--stage);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    #stage[data-site="linkedin"] { --stage: #f4f2ee; }
+    #stage[data-site="reddit"][data-theme="dark"] { --stage: #0e1113; }
+    #stage[data-theme="dark"] { --stage: #000; }
+    #stage[data-site="youtube"][data-theme="dark"] { --stage: #0f0f0f; }
+    #stage[data-site="9gag"][data-theme="dark"] { --stage: #121212; }
+    #stage #kff-feed { height: auto; overflow: visible; padding: 0; }
+
+    .stepper { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 10px; color: var(--muted); font-size: 14px; }
+    .stepper button {
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: none;
+      color: var(--fg);
+      font: inherit;
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .stepper button:disabled { opacity: 0.4; cursor: default; }
   </style>
 </head>
 <body>
-  <h1>Boring Feed</h1>
-  <p>Fill in what you know about yourself. Leave a field empty to skip it. Facts become the posts in your replacement feed.</p>
+  <div class="wrap">
+    <header>
+      <img src="icons/icon48.png" alt="">
+      <div>
+        <h1>Boring Feed</h1>
+        <p>Same scroll habit, zero novelty.</p>
+      </div>
+    </header>
 
-  <form id="form">
-    <div id="fields"></div>
+    <div class="welcome" id="welcome" hidden>
+      <b>Welcome! Let's make your feed boring.</b>
+      Fill in a few facts about yourself, hit Save, then open <span id="welcomeSites"></span>. Your home feed will be nothing but things you already know.
+    </div>
 
-    <label for="custom">Custom facts <span class="hint">(one full sentence per line)</span></label>
-    <textarea id="custom" placeholder="You fear trying something new&#10;You keep saying you'll start tomorrow"></textarea>
+    <div class="layout">
+      <form id="form" class="panel">
+        <section>
+          <h2>About you</h2>
+          <p class="intro">Leave a field empty to skip it. Each answer becomes a post in your feed.</p>
+          <div class="fields" id="fields"></div>
+        </section>
 
-    <h2>Behaviour</h2>
-    <label class="row"><input type="checkbox" id="enabled"> Enabled</label>
-    <label class="row"><input type="checkbox" id="shuffle"> Shuffle order <span class="hint">(off = same predictable order every time)</span></label>
+        <section>
+          <h2><label for="custom">Custom facts</label></h2>
+          <p class="intro">One full sentence per line.</p>
+          <textarea id="custom" placeholder="You fear trying something new&#10;You keep saying you'll start tomorrow"></textarea>
+        </section>
 
-    <h2>Sites</h2>
-    <div id="sites"></div>
+        <section>
+          <h2>Behaviour</h2>
+          <label class="row"><input type="checkbox" id="enabled"> Enabled</label>
+          <label class="row"><input type="checkbox" id="shuffle"> Shuffle order <span class="hint">(off = same predictable order every time)</span></label>
+        </section>
 
-    <button type="submit">Save</button><span id="status"></span>
-  </form>
+        <section>
+          <h2>Sites</h2>
+          <div id="sites"></div>
+        </section>
+
+        <div class="savebar">
+          <button type="submit" class="primary">Save</button>
+          <span id="status" role="status"></span>
+        </div>
+      </form>
+
+      <aside class="panel preview" aria-label="Preview">
+        <div class="preview-head">
+          <h2>Preview</h2>
+          <div class="tabs" id="tabs" role="tablist"></div>
+        </div>
+        <div id="stage">
+          <div id="kff-feed"></div>
+        </div>
+        <div class="stepper">
+          <button type="button" id="prev" aria-label="Previous fact">‹</button>
+          <span id="count"></span>
+          <button type="button" id="next" aria-label="Next fact">›</button>
+        </div>
+      </aside>
+    </div>
+  </div>
 
   <script src="sites.js"></script>
+  <script src="cards.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

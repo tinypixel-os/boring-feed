@@ -3,7 +3,8 @@
 //   hosts: hostnames (subdomains match too)
 //   route: tested against location.pathname; only feed pages should match
 //   feed:  ordered selectors for the native feed container (first hit wins)
-//   profile (optional): per-person timelines, also replaced.
+//   profile (optional): per-person timelines, also replaced unless the user
+//     turns profiles off for the site.
 //     route's first capture group is the handle; paths whose first segment is
 //     in reserved are the site's own pages, not profiles. feed as above.
 //     self (optional): selector for a link to the signed-in user's profile;
@@ -126,11 +127,12 @@ function kffFindSite(hostname) {
 // identifies the route (so SPA navigation between two replaced pages rebuilds
 // the feed), or null if this page should be left alone. selfHandle is the
 // signed-in user's lowercased handle, if known; their own profile is skipped.
-function kffMatchRoute(site, pathname, selfHandle) {
+// profilesOn false leaves every profile alone.
+function kffMatchRoute(site, pathname, selfHandle, profilesOn = true) {
   if (site.route.test(pathname)) return { key: "feed", feed: site.feed };
   const page = (site.pages || []).findIndex((p) => p.route.test(pathname));
   if (page >= 0) return { key: "page:" + page, feed: site.pages[page].feed };
-  const m = site.profile && pathname.match(site.profile.route);
+  const m = profilesOn && site.profile && pathname.match(site.profile.route);
   const handle = m && m[1].toLowerCase();
   if (handle && handle !== selfHandle && !site.profile.reserved.includes(handle)) {
     return { key: "profile:" + handle, feed: site.profile.feed };

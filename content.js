@@ -1,17 +1,25 @@
 (() => {
+  // Hostnames never change within a page, so a page on no supported site
+  // stops here and pays nothing.
+  const site = kffFindSite(location.hostname);
+  if (!site) return;
+
   const HIDE = "kff-hidden";
   const BATCH = 6;
-  const PLACEHOLDER = "Open the Boring Feed options to add facts about yourself.";
   let settings = null;
-  let observer = null;
   let order = [];
   let pos = 0;
   let selfHandle = null;
+  let selfRead = false; // selfHandle has been read from this page's DOM
+  let feedEl = null;
+  let hiddenRoot = null;
+  let scrollObserver = null;
+  let lastPath = null;
 
   const load = () =>
     new Promise((resolve) =>
       chrome.storage.sync.get(
-        { enabled: true, disabledSites: {}, shuffle: false, facts: [] },
+        { enabled: true, disabledSites: {}, disabledProfiles: {}, shuffle: false, facts: [] },
         resolve
       )
     );
@@ -27,8 +35,7 @@
 
   function nextFact() {
     if (pos >= order.length) {
-      const facts = settings.facts.length ? settings.facts : [PLACEHOLDER];
-      order = settings.shuffle ? shuffled(facts) : facts.slice();
+      order = settings.shuffle ? shuffled(settings.facts) : settings.facts.slice();
       pos = 0;
     }
     const i = pos++;
@@ -49,7 +56,7 @@
 
   // The site's hide selectors, as one rule each so a selector the browser
   // rejects doesn't take the others down with it.
-  function syncHide(site, on) {
+  function syncHide(on) {
     let style = document.getElementById("kff-hide");
     if (!on || !site.hide) {
       style?.remove();
@@ -63,7 +70,7 @@
   }
 
   let redirecting = false;
-  function redirect(site) {
+  function redirect() {
     for (const [pattern, to] of site.redirects || []) {
       if (!redirecting && pattern.test(location.pathname)) {
         redirecting = true;
@@ -74,45 +81,20 @@
     return false;
   }
 
+  const profilesOn = () => !settings.disabledProfiles[site.id];
+
   const addBatch = (feed, sentinel) => {
     for (let i = 0; i < BATCH; i++)
-      feed.insertBefore(KFF_CARDS.render(feed.dataset.site, nextFact()), sentinel);
+      feed.insertBefore(KFF_CARDS.render(site.id, nextFact()), sentinel);
   };
 
-  // Buttons only change local state (see the data-* contract in cards.js);
-  // nothing is sent anywhere. Events stop here so the host page never sees them.
-  function setOn(btn, on) {
-    btn.classList.toggle("kff-on", on);
-    btn.setAttribute("aria-pressed", String(on));
-  }
-
-  function press(btn) {
-    const post = btn.closest(".kff-post");
-    if (btn.hasAttribute("data-more")) {
-      post.querySelector(".kff-clamp")?.classList.remove("kff-clamp");
-      btn.remove();
-      return;
-    }
-    if (!btn.hasAttribute("data-toggle")) return;
-    const on = !btn.classList.contains("kff-on");
-    if (on && btn.dataset.group) {
-      post.querySelectorAll(`.kff-on[data-group="${btn.dataset.group}"]`).forEach((b) => setOn(b, false));
-    }
-    setOn(btn, on);
-    for (const c of post.querySelectorAll("[data-count-of]")) {
-      let n = Number(c.dataset.base);
-      for (const b of post.querySelectorAll(`.kff-on[data-count="${c.dataset.countOf}"]`))
-        n += Number(b.dataset.delta);
-      c.textContent = KFF_CARDS.FMT[c.dataset.fmt](n);
-    }
-  }
-
+  // Events stop here so the host page never sees them.
   function onClick(e) {
     e.stopPropagation();
     const btn = e.target.closest("button");
     if (btn) {
       e.preventDefault();
-      press(btn);
+      KFF_CARDS.press(btn);
     }
   }
 
@@ -122,7 +104,7 @@
     const media = e.target.closest("[data-dbl-like]");
     if (!media) return;
     const like = media.closest(".kff-post").querySelector(".kff-ig-like");
-    if (like && !like.classList.contains("kff-on")) press(like);
+    if (like && !like.classList.contains("kff-on")) KFF_CARDS.press(like);
     media.classList.remove("kff-burst");
     void media.offsetWidth; // restart the animation
     media.classList.add("kff-burst");
@@ -182,13 +164,22 @@
     document.getElementById("kff-loader")?.remove();
   }
 
+  // Our feed is in the page, right before the native feed it hides.
+  const installed = () =>
+    feedEl !== null &&
+    feedEl.isConnected &&
+    feedEl.nextElementSibling === hiddenRoot &&
+    hiddenRoot.classList.contains(HIDE);
+
   function teardown() {
-    if (observer) {
-      observer.disconnect();
-      observer = null;
+    if (scrollObserver) {
+      scrollObserver.disconnect();
+      scrollObserver = null;
     }
+    feedEl?.remove();
     document.getElementById("kff-feed")?.remove();
     document.querySelectorAll("." + HIDE).forEach((n) => n.classList.remove(HIDE));
+    feedEl = hiddenRoot = null;
   }
 
   function findRoot(selectors) {
@@ -201,106 +192,141 @@
 
   // The signed-in user's handle, read from the site's own profile link and
   // cached locally so it's known before the page renders next time.
-  const selfKey = (site) => "selfHandle:" + site.id;
+  const selfKey = "selfHandle:" + site.id;
+  const needSelf = () => !selfRead && site.profile && profilesOn();
 
-  function detectSelf(site) {
-    const sel = site.profile && site.profile.self;
-    const href = sel && document.querySelector(sel)?.getAttribute("href");
+  function detectSelf() {
+    const href = document.querySelector(site.profile.self)?.getAttribute("href");
     const m = href && href.match(/^\/([^/?#]+)/);
-    const handle = m && m[1].toLowerCase();
-    if (handle && handle !== selfHandle) {
+    if (!m) return;
+    selfRead = true;
+    const handle = m[1].toLowerCase();
+    if (handle !== selfHandle) {
       selfHandle = handle;
-      chrome.storage.local.set({ [selfKey(site)]: handle });
+      chrome.storage.local.set({ [selfKey]: handle });
     }
   }
 
-  function apply() {
-    if (!settings) return;
-    if (gaveUpPath && gaveUpPath !== location.pathname) gaveUpPath = null;
-    const site = kffFindSite(location.hostname);
-    if (site) detectSelf(site);
-    const on = settings.enabled && site && !settings.disabledSites[site.id];
-    if (site) syncHide(site, on);
-    if (on && redirect(site)) return;
-    const match = on && kffMatchRoute(site, location.pathname, selfHandle);
-    const existing = document.getElementById("kff-feed");
+  // DOM changes only matter on pages we replace: while waiting for the native
+  // feed to render, and to rebuild ours if the site re-renders over it. Other
+  // pages run with the observer off; navigation events bring it back.
+  const domObserver = new MutationObserver(onMutate);
+  let watching = false;
 
-    if (!match) {
-      hideLoader();
-      if (existing) teardown();
-      return;
-    }
-    if (
-      existing &&
-      existing.dataset.site === site.id &&
-      existing.dataset.route === match.key &&
-      existing.nextElementSibling?.classList.contains(HIDE)
-    ) {
-      hideLoader();
-      return;
-    }
+  function watch(on) {
+    if (on === watching) return;
+    watching = on;
+    if (on) domObserver.observe(document.documentElement, { childList: true, subtree: true });
+    else domObserver.disconnect();
+  }
 
-    const root = findRoot(match.feed);
-    if (!root || !document.body) {
-      showLoader();
-      return;
-    }
+  function onMutate() {
+    if (location.pathname === lastPath && installed() && !needSelf()) return;
+    schedule();
+  }
 
+  // At most one apply() per frame, however many events ask for it. Frames run
+  // before paint, so a re-rendered native feed is hidden before it shows.
+  let scheduled = false;
+  function schedule() {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      apply();
+    });
+  }
+
+  function build(match, root) {
     teardown();
     order = [];
     pos = 0;
-    const feed = document.createElement("div");
+    hiddenRoot = root;
+    const feed = feedEl = document.createElement("div");
     feed.id = "kff-feed";
     feed.dataset.site = site.id;
     feed.dataset.route = match.key;
     feed.dataset.theme = detectTheme();
     feed.addEventListener("click", onClick);
     feed.addEventListener("dblclick", onDblClick);
+    root.parentNode.insertBefore(feed, root);
+    root.classList.add(HIDE);
+
+    // No facts yet: a single card pointing to the options page.
+    if (!settings.facts.length) {
+      feed.append(KFF_CARDS.empty());
+      return;
+    }
+
     const sentinel = document.createElement("div");
     sentinel.className = "kff-sentinel";
     const spinner = document.createElement("div");
     spinner.className = "kff-spinner";
     sentinel.append(spinner);
     feed.append(sentinel);
-
-    root.parentNode.insertBefore(feed, root);
-    root.classList.add(HIDE);
     fillInitial(feed, sentinel);
 
-    observer = new IntersectionObserver(
+    scrollObserver = new IntersectionObserver(
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) loadMore(feed, sentinel);
       },
       { root: feed }
     );
-    observer.observe(sentinel);
+    scrollObserver.observe(sentinel);
+  }
+
+  function apply() {
+    if (!settings) return;
+    lastPath = location.pathname;
+    if (gaveUpPath && gaveUpPath !== lastPath) gaveUpPath = null;
+    const on = settings.enabled && !settings.disabledSites[site.id];
+    if (on && needSelf()) detectSelf();
+    syncHide(on);
+    if (on && redirect()) return;
+    const match = on && kffMatchRoute(site, lastPath, selfHandle, profilesOn());
+    watch(!!match);
+
+    if (!match) {
+      hideLoader();
+      if (feedEl) teardown();
+      return;
+    }
+    if (installed() && feedEl.dataset.route === match.key) {
+      hideLoader();
+      return;
+    }
+    const root = findRoot(match.feed);
+    if (!root || !document.body) {
+      showLoader();
+      return;
+    }
+    build(match, root);
     hideLoader();
   }
 
   async function init() {
-    // Optimistically cover the page before settings load; apply() removes it
-    // straight away if the extension is disabled here.
-    const site = kffFindSite(location.hostname);
-    if (site) {
-      const key = selfKey(site);
-      selfHandle = (await chrome.storage.local.get(key))[key] || null;
-    }
-    if (site && kffMatchRoute(site, location.pathname, selfHandle)) showLoader();
-
-    settings = await load();
+    const [local, loaded] = await Promise.all([chrome.storage.local.get(selfKey), load()]);
+    selfHandle = local[selfKey] || null;
+    settings = loaded;
+    // Cover the page straight away if it's one we replace; apply() keeps the
+    // cover until the native feed exists to be swapped out.
     apply();
-    new MutationObserver(apply).observe(document.documentElement, {
-      childList: true,
-      subtree: true,
-    });
-    addEventListener("popstate", apply);
-    if (window.navigation) navigation.addEventListener("navigate", () => setTimeout(apply, 0));
-    setInterval(apply, 1500); // catches pushState navigations with no DOM churn
+
+    addEventListener("popstate", schedule);
+    if (window.navigation) {
+      // navigate fires before the URL changes; look once it has.
+      navigation.addEventListener("navigate", () => setTimeout(schedule, 0));
+      navigation.addEventListener("navigatesuccess", schedule);
+    }
+    // Backstop for pushState navigations that slip past the events above:
+    // a string compare, and apply() only when the path actually changed.
+    setInterval(() => {
+      if (location.pathname !== lastPath) schedule();
+    }, 1000);
+
     chrome.storage.onChanged.addListener(async (_, area) => {
       if (area !== "sync") return;
       settings = await load();
-      order = [];
-      pos = 0;
       teardown();
       apply();
     });

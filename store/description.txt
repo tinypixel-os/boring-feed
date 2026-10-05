@@ -1,10 +1,10 @@
 Boring Feed swaps your social media feeds for an endless scroll of facts you already know about yourself. Same scroll habit, zero novelty.
 
-The urge to scroll is hard to beat, so this extension doesn't fight it. It takes away the reward. When you open your home feed, you'll find posts that look like the real thing, but every one says something you already know: your name, your city, your job, the things you wrote down about yourself. Nothing new, nothing to chase, so the pull to keep scrolling fades.
+The urge to scroll is hard to beat, so this extension doesn't fight it. It takes away the reward. When you open your home feed, you'll find posts that look like the real thing, but every one says something you already know: your name, your job, the things you wrote down about yourself. Nothing new, nothing to chase, so the pull to keep scrolling fades.
 
 SUPPORTED SITES
 • LinkedIn
-• X / Twitter (home feed and profile timelines; the profile header stays)
+• X / Twitter (home feed, plus other people's profile timelines if you want; the profile header stays)
 • Reddit
 • Instagram
 • 9GAG
@@ -12,13 +12,13 @@ SUPPORTED SITES
 
 FEATURES
 • Posts are styled to match each site, so the swap feels natural
-• Add your own facts, one sentence per line
+• Add your own facts, one sentence per line, with a live preview of how they'll look on each site
 • Predictable order by default, or turn on shuffle
 • Turn it on or off everywhere, or for one site at a time, from the toolbar popup
 • Likes, votes and bookmarks work, but only change things on your screen
 
 HOW TO USE
-1. Install the extension and open its Options page.
+1. Install the extension. Its Options page opens for you.
 2. Fill in what you know about yourself. Leave any field empty to skip it.
 3. Click Save and visit a supported site.
 

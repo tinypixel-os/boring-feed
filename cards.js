@@ -11,6 +11,7 @@
 //   data-count/-delta  while on, adds delta to the [data-count-of] counter
 //   data-fill          fill the icon while on
 //   data-more          expands clamped text
+//   data-open-options  opens the options page (empty-feed card)
 const KFF_CARDS = (() => {
   const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -521,10 +522,55 @@ const KFF_CARDS = (() => {
     );
   }
 
+  // --- No facts yet ---------------------------------------------------------
+  // One plain card in place of the feed, the same on every site.
+  function empty() {
+    return h(
+      "article",
+      { class: "kff-post kff-empty" },
+      h("b", { class: "kff-empty-title", text: "Your boring feed is empty" }),
+      h("p", { class: "kff-muted", text: "Add a few facts about yourself and they'll show up here as posts." }),
+      h("button", { class: "kff-btn kff-empty-btn", type: "button", "data-open-options": "", text: "Add your facts" })
+    );
+  }
+
+  // Button behavior for the data-* contract above. Only local state changes;
+  // nothing is sent anywhere.
+  function setOn(btn, on) {
+    btn.classList.toggle("kff-on", on);
+    btn.setAttribute("aria-pressed", String(on));
+  }
+
+  function press(btn) {
+    const post = btn.closest(".kff-post");
+    if (btn.hasAttribute("data-open-options")) {
+      chrome.runtime.sendMessage({ type: "openOptions" });
+      return;
+    }
+    if (btn.hasAttribute("data-more")) {
+      post.querySelector(".kff-clamp")?.classList.remove("kff-clamp");
+      btn.remove();
+      return;
+    }
+    if (!btn.hasAttribute("data-toggle")) return;
+    const on = !btn.classList.contains("kff-on");
+    if (on && btn.dataset.group) {
+      post.querySelectorAll(`.kff-on[data-group="${btn.dataset.group}"]`).forEach((b) => setOn(b, false));
+    }
+    setOn(btn, on);
+    for (const c of post.querySelectorAll("[data-count-of]")) {
+      let n = Number(c.dataset.base);
+      for (const b of post.querySelectorAll(`.kff-on[data-count="${c.dataset.countOf}"]`))
+        n += Number(b.dataset.delta);
+      c.textContent = FMT[c.dataset.fmt](n);
+    }
+  }
+
   const RENDERERS = { linkedin, twitter, reddit, instagram, "9gag": ninegag, youtube };
 
   return {
-    FMT,
     render: (siteId, item) => (RENDERERS[siteId] || twitter)(item),
+    empty,
+    press,
   };
 })();
